@@ -4,7 +4,7 @@ pipeline {
     environment {
         REMOTE_HOST = '127.0.0.1'           
         REMOTE_USER = 'yaop'                    
-        SSH_CREDENTIALS_ID = 'ssh-key-jenkins'   
+        SSH_CREDENTIALS_ID = 'ssh-key-jenkins1'   
     }
 
     stages {

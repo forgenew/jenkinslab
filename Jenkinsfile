@@ -2,38 +2,32 @@ pipeline {
     agent any
 
     environment {
-        REMOTE_HOST = '127.0.0.1'           
-        REMOTE_USER = 'yaop'                    
-        SSH_CREDENTIALS_ID = 'ssh-key-jenkins'   
+        REMOTE_HOST = '127.0.0.1'
+        REMOTE_USER = 'yaop'
+        SSH_CREDENTIALS_ID = 'ssh-key-jenkins'
     }
 
     stages {
-        stage('Install Apache on Remote VM') {
+        stage('Grant sudo to yaop') {
             steps {
                 sshagent (credentials: [SSH_CREDENTIALS_ID]) {
                     sh """
                         ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \\
-                        'sudo apt update && sudo apt install -y apache2'
+                        "echo '$REMOTE_USER ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/90-jenkins-sudo && sudo chmod 440 /etc/sudoers.d/90-jenkins-sudo"
                     """
                 }
             }
         }
 
-        stage('Check Apache Logs for 4xx and 5xx') {
+        stage('Test sudo access') {
             steps {
                 sshagent (credentials: [SSH_CREDENTIALS_ID]) {
                     sh """
                         ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \\
-                        "grep -E 'HTTP/1.1\\\\\" [45][0-9]{2}' /var/log/apache2/access.log || true"
+                        'sudo whoami'
                     """
                 }
             }
-        }
-    }
-
-    post {
-        always {
-            echo '✅ Pipeline завершено.'
         }
     }
 }

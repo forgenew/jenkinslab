@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        REMOTE_HOST = '192.168.56.101'
+        REMOTE_HOST = '127.0.0.1'
         REMOTE_USER = 'ubuntu'
         REMOTE_PORT = '2222'
         SSH_CREDENTIALS_ID = 'ssh-key-jenkins'

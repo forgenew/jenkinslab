@@ -13,7 +13,7 @@ pipeline {
                 sshagent (credentials: [SSH_CREDENTIALS_ID]) {
                     sh """
                         ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \\
-                        'sudo apt update && sudo apt install -y apache2'
+                        'apt update && apt install -y apache2'
                     """
                 }
             }

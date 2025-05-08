@@ -2,38 +2,24 @@ pipeline {
     agent any
 
     environment {
-        REMOTE_HOST = '127.0.0.1'
-        REMOTE_USER = 'yaop'
-        SSH_CREDENTIALS_ID = 'ssh-key-jenkins'
+        SSH_USER = 'yaop'
+        SSH_HOST = '127.0.0.1'
     }
 
     stages {
-        stage('Ensure sudo access for yaop') {
+        stage('Install Apache over SSH') {
             steps {
-                sshagent (credentials: [SSH_CREDENTIALS_ID]) {
-                    // Створюємо sudo-правила, якщо ще не створені
+                sshagent(['ssh-key-jenkins']) {
                     sh """
-                        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST '
-                        echo "$REMOTE_USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/90-jenkins-sudo >/dev/null &&
-                        sudo chmod 440 /etc/sudoers.d/90-jenkins-sudo'
+                        ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} << EOF
+                            sudo apt-get update
+                            sudo apt-get install -y apache2
+                            sudo systemctl enable apache2
+                            sudo systemctl start apache2
+                        EOF
                     """
                 }
             }
         }
-
-        stage('Verify sudo works') {
-            steps {
-                sshagent (credentials: [SSH_CREDENTIALS_ID]) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \\
-                        'sudo -n whoami | grep -q root'
-                    """
-                }
-            }
-        }
-
-        stage('Install Apache on Remote VM') {
-            steps {
-                sshagent (credentials: [SSH_CREDENTIALS_ID]) {
-                    sh """
-                        ssh -
+    }
+}

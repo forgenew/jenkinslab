@@ -11,7 +11,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: '79ac7297-d402-4a98-b4e4-e825104d7a4f', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
                     sh """
                         sshpass -p "$PASS" ssh -o StrictHostKeyChecking=no \\
-                        $USER@$REMOTE_HOST 'sudo apt update && sudo apt install -y apache2'
+                        $USER@$REMOTE_HOST 'apt update && sudo apt install -y apache2'
                     """
                 }
             }

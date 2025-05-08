@@ -2,16 +2,18 @@ pipeline {
     agent any
 
     environment {
-        REMOTE_HOST = '127.0.0.1'  
+        REMOTE_HOST = '127.0.0.1'           
+        REMOTE_USER = 'yaop'                    
+        SSH_CREDENTIALS_ID = 'ssh-key-jenkins'   
     }
 
     stages {
         stage('Install Apache on Remote VM') {
             steps {
-                withCredentials([usernamePassword(credentialsId: '79ac7297-d402-4a98-b4e4-e825104d7a4f', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                sshagent (credentials: [SSH_CREDENTIALS_ID]) {
                     sh """
-                        sshpass -p "$PASS" ssh -o StrictHostKeyChecking=no \\
-                        $USER@$REMOTE_HOST 'apt update && sudo apt install -y apache2'
+                        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \\
+                        'sudo apt update && sudo apt install -y apache2'
                     """
                 }
             }
@@ -19,10 +21,10 @@ pipeline {
 
         stage('Check Apache Logs for 4xx and 5xx') {
             steps {
-                withCredentials([usernamePassword(credentialsId: '79ac7297-d402-4a98-b4e4-e825104d7a4f', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                sshagent (credentials: [SSH_CREDENTIALS_ID]) {
                     sh """
-                        sshpass -p "$PASS" ssh -o StrictHostKeyChecking=no \\
-                        $USER@$REMOTE_HOST "grep -E 'HTTP/1.1\\\\\" [45][0-9]{2}' /var/log/apache2/access.log || true"
+                        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \\
+                        "grep -E 'HTTP/1.1\\\\\" [45][0-9]{2}' /var/log/apache2/access.log || true"
                     """
                 }
             }

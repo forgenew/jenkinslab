@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        REMOTE_HOST = '192.168.56.101'  // ← ваша локальна IP-адреса
+        REMOTE_HOST = '127.0.0.1'  
     }
 
     stages {

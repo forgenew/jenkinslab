@@ -2,38 +2,38 @@ pipeline {
     agent any
 
     environment {
-        REMOTE_HOST = '127.0.0.1'           
-        REMOTE_USER = 'yaop'                    
-        SSH_CREDENTIALS_ID = 'ssh-key-jenkins1'   
+        REMOTE_HOST = '127.0.0.1'
+        REMOTE_USER = 'yaop'
+        SSH_CREDENTIALS_ID = 'ssh-key-jenkins'
     }
 
     stages {
+        stage('Ensure sudo access for yaop') {
+            steps {
+                sshagent (credentials: [SSH_CREDENTIALS_ID]) {
+                    // Створюємо sudo-правила, якщо ще не створені
+                    sh """
+                        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST '
+                        echo "$REMOTE_USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/90-jenkins-sudo >/dev/null &&
+                        sudo chmod 440 /etc/sudoers.d/90-jenkins-sudo'
+                    """
+                }
+            }
+        }
+
+        stage('Verify sudo works') {
+            steps {
+                sshagent (credentials: [SSH_CREDENTIALS_ID]) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \\
+                        'sudo -n whoami | grep -q root'
+                    """
+                }
+            }
+        }
+
         stage('Install Apache on Remote VM') {
             steps {
                 sshagent (credentials: [SSH_CREDENTIALS_ID]) {
                     sh """
-                        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \\
-                        'apt update && apt install -y apache2'
-                    """
-                }
-            }
-        }
-
-        stage('Check Apache Logs for 4xx and 5xx') {
-            steps {
-                sshagent (credentials: [SSH_CREDENTIALS_ID]) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \\
-                        "grep -E 'HTTP/1.1\\\\\" [45][0-9]{2}' /var/log/apache2/access.log || true"
-                    """
-                }
-            }
-        }
-    }
-
-    post {
-        always {
-            echo '✅ Pipeline завершено.'
-        }
-    }
-}
+                        ssh -

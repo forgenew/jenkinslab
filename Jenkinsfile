@@ -5,7 +5,7 @@ pipeline {
         REMOTE_HOST = '127.0.0.1'
         REMOTE_USER = 'ubuntu'
         REMOTE_PORT = '2222'
-        SSH_CREDENTIALS_ID = 'ssh-key-jenkins'
+        SSH_CREDENTIALS_ID = '79ac7297-d402-4a98-b4e4-e825104d7a4f'
     }
 
     stages {
